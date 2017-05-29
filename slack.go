@@ -2,6 +2,7 @@ package zapslack
 
 import (
 	"errors"
+	"sync"
 	"time"
 
 	"go.uber.org/zap/zapcore"
@@ -28,6 +29,8 @@ type SlackHook struct {
 	Async       bool          // if async is true, send a message asynchronously.
 
 	hook *slack.WebHook
+
+	once sync.Once
 }
 
 func NewSlackHook(hookURL string, level zapcore.Level) *SlackHook {
@@ -39,10 +42,12 @@ func NewSlackHook(hookURL string, level zapcore.Level) *SlackHook {
 
 func (sh *SlackHook) GetHook() func(zapcore.Entry) error {
 	return func(e zapcore.Entry) error {
-		if sh.hook == nil {
+		sh.once.Do(func() {
 			sh.hook = slack.NewWebHook(sh.HookURL)
+		})
+		if !sh.isAcceptedLevel(e.Level) {
+			return nil
 		}
-
 		payload := &slack.WebHookPostPayload{
 			Username:  sh.Username,
 			Channel:   sh.Channel,
@@ -92,6 +97,15 @@ func (sh *SlackHook) Levels() []zapcore.Level {
 		return AllLevels
 	}
 	return sh.AcceptedLevels
+}
+
+func (sh *SlackHook) isAcceptedLevel(level zapcore.Level) bool {
+	for _, lv := range sh.Levels() {
+		if lv == level {
+			return true
+		}
+	}
+	return false
 }
 
 // Supported log levels
