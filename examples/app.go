@@ -1,8 +1,3 @@
-# Slack Hooks for zap
-
-## Example
-
-``` go
 package main
 
 import (
@@ -10,10 +5,12 @@ import (
 	"go.uber.org/zap"
 )
 
-func main() {
-    // Please rewrite it with your webhook URL
-	slackWebHookURL := "https://hooks.slack.com/services/XXXXX/YYYYY/ZZZZZ"
+var (
+	// Please rewrite it with your webhook URL
+	slackWebHookURL = "https://hooks.slack.com/services/XXXXX/YYYYY/ZZZZZ"
+)
 
+func main() {
 	logger, _ := zap.NewProduction()
 
 	// Send a notification to slack at only error, fatal, panic level
@@ -24,17 +21,3 @@ func main() {
 	logger.Debug("don't need to send a message")
 	logger.Error("an error happened!")
 }
-```
-
-## Install
-
-```
-$ go get -u github.com/bluele/zapslack
-```
-
-## Author
-
-**Jun Kimura**
-
-* <http://github.com/bluele>
-* <junkxdev@gmail.com>
